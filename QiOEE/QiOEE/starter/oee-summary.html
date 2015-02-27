@@ -12,7 +12,7 @@
 <polymer-element name="oee-summary" attributes="url">
     <template>
         <core-ajax auto
-                   url="http://localhost:49259/api/oee"
+                   url="http://localhost:49259/api/oee/today/0"
                    handleas="json"
                    on-core-response="{{handleResponse}}"></core-ajax>
         <style>
