@@ -6,26 +6,36 @@
 
 <script src="../components/c3/c3.min.js"></script>
 <!--params='{" start":"2015-02-20","stop":"2015-02-27"}'-->
-<polymer-element name="oee-gage" attributes="height width gvalue">
+<polymer-element name="oee-gage" attributes="height1 width1 gvalue label1">
     <template>
         <link href="../components/c3/c3.min.css" rel="stylesheet" type="text/css" />
 
         <style>
-            div{
+            .test{
                 display:inline-block;
-                width:200px;
-                margin:1em;
+                width:400px; 
+                margin:10px;
                 background: #eaeaea;
             }
+            text{
+                font-family:Arial;
+                font-size:medium;
+            }
+            .gage{
+                height:300px;
+            }
        </style>
-                <div id="OEEgage"></div>
+        <div class="test">
+            <div class="gage" id="OEEgage"></div>
+            <div id="slabel">{{label1}}</div>
+        </div>
+
     </template>
     <script>
         Polymer({
             data: [],
 
             drawChart: function () {
-
                 var OEEgage = c3.generate({
                     bindto: this.$.OEEgage,
                     data: {
@@ -48,7 +58,7 @@
                         min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
                         max: 100, // 100 is default
                         units: ' %',
-                        width: this.width // for adjusting arc thickness
+                        width: this.width1 // for adjusting arc thickness
                     },
                     color: {
                         pattern: ['#FF0000', '#F97600', '#F6C600', '#60B044'], // the three color levels for the percentage values.
@@ -59,7 +69,7 @@
                         }
                     },
                     size: {
-                        height: this.height
+                        height: this.height1
                     }
                 });
             },

@@ -17,27 +17,15 @@
                    on-core-response="{{handleResponse}}"></core-ajax>
         <style>
             oee-gage {
-                margin: 10px 10px 10px 10px;
+                height:500px;
             }
-            .example{
-                background: #b6ff00;
-                padding: 10px;
-            }
-            .example > div {
-                background: #EEE;
-                margin: 10px;
-            }
-        </style>
 
-        <div class="example" layout horizontal>
-            <div>One</div>
-            <div>Two</div>
-            <div>Three</div>
-        </div>
-        <oee-gage id="OEEgage" height="180" width="60" gvalue="22.3"></oee-gage>
-            <oee-gage id="Agage" height="130" width="30" gvalue="60.3"></oee-gage>
-            <oee-gage id="Pgage" height="130" width="30" gvalue="60.3"></oee-gage>
-            <oee-gage id="Qgage" height="130" width="30" gvalue="60.3"></oee-gage>
+
+        </style>
+        <oee-gage id="OEEgage" height1="190" width1="60" gvalue="22.3"></oee-gage>
+        <oee-gage id="Agage" height1="130" width1="30" gvalue="60.3"></oee-gage>
+        <oee-gage id="Pgage" height1="130" width1="30" gvalue="60.3"></oee-gage>
+        <oee-gage id="Qgage" height1="130" width1="30" gvalue="60.3"></oee-gage>
 
 
 
@@ -47,11 +35,14 @@
             data: [],
             handleResponse: function (e) {
                 var o = e.detail.response;
-                var g = this.$.OEEgage;
-                g.gvalue = o.OEE;
+                this.$.OEEgage.gvalue = o.OEE;
                 this.$.Agage.gvalue = o.Availability;
                 this.$.Pgage.gvalue = o.Throughput;
                 this.$.Qgage.gvalue = o.Quality;
+                this.$.OEEgage.label1 = "Overall OEE";
+                this.$.Agage.label1 = "Availability";
+                this.$.Pgage.label1 = "Performance";
+                this.$.Qgage.label1 = "Quality";
 
             },
 
