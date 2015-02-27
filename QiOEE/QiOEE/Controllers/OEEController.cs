@@ -11,47 +11,37 @@ namespace QiOEE.Controllers
 {
     public class OEEController : ApiController
     {
-        public static uint Tenant = 10000;
-        public static string Endpoint = "http://historiandev.cloudapp.net:3380";
-        public static string TagPrefix = "P6-8";
+        private uint _tenant = 10000;
+        private string _endpoint = "http://historiandev.cloudapp.net:3380";
+        private string _tagPrefix = "P6-8";
+        public QiQuery.Client _qiData = null;
 
-        public QiQuery.Client QiData { get; set; }
         public OEEController()
         {
-            QiData = new Client(Endpoint,Tenant,TagPrefix);
+            _qiData = new Client(_endpoint,_tenant,_tagPrefix);
             
         }
-        // GET: api/OEE
-        public OEEModel Get()
+
+        [HttpGet]
+        [Route("api/oee/today/{shift:int}")]
+        public OEEModel GetToday(int shift)
         {
-            int[] data = { 1, 2, 3, 4,6,7,8,9,10,11,6,3 };
-            var testData = new QiQuery.OEEModel(DateTime.Now.AddHours(-5), DateTime.Now.AddHours(-1));
-            testData.Availability = 60.50;
-            testData.Throughput = 94.34;
-            testData.Quality = 91.35;
-            testData.OEE = testData.Availability / 100 * testData.Throughput / 100 * testData.Quality / 100 * 100;
-            return testData;// QiData.GetOEE(DateTime.Now.AddHours(-5), DateTime.Now.AddHours(-1), 0);// QiService.DataTest();
+            return _qiData.GetOEEToday(shift);
         }
 
-        // GET: api/OEE/5
-        public string Get(int id)
+        [HttpGet]
+        [Route("api/oee/yesterday/{shift:int}")]
+        public OEEModel GetYesterday(int shift)
         {
-            return "value";
+            return _qiData.GetOEEYesterday(shift);
         }
 
-        // POST: api/OEE
-        public void Post([FromBody]string value)
+        [HttpGet]
+        [Route("api/oee/week/{shift:int}")]
+        public OEEModel GetWeek(int shift)
         {
+            return _qiData.GetOEEWeek(shift);
         }
 
-        // PUT: api/OEE/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE: api/OEE/5
-        public void Delete(int id)
-        {
-        }
     }
 }
