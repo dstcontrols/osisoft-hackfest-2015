@@ -82,6 +82,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="components\c3\c3.min.css" />
+    <Content Include="components\c3\c3.min.js" />
     <Content Include="components\core-a11y-keys\core-a11y-keys.html" />
     <Content Include="components\core-a11y-keys\demo.html" />
     <Content Include="components\core-a11y-keys\index.html" />
@@ -247,7 +249,9 @@
     <Content Include="post-service\post-service.html" />
     <Content Include="starter\ajaxdemo.html" />
     <Content Include="starter\index.html" />
+    <Content Include="starter\oee-gage.html" />
     <Content Include="starter\lb-bar-chart.html" />
+    <Content Include="starter\Overview.html" />
     <Content Include="starter\pie-chart.html" />
     <Content Include="starter\polymer-d3-sparkline.html" />
     <Content Include="starter\post-card.html" />
