@@ -1,0 +1,88 @@
+﻿<link rel="import" href="../components/polymer/polymer.html">
+
+<polymer-element name="lb-bar-chart" attributes="url">
+    <template>
+        <style>
+            :host {
+                display: block;
+                height: 120px;
+            }
+
+            text {
+                fill: white;
+                font-family: sans-serif;
+                font-size: 11px;
+            }
+
+            svg {
+                margin: 10px 0 0 10px;
+            }
+
+            .arc path {
+                stroke: #fff;
+            }
+        </style>
+        <svg id="svg"></svg>
+    </template>
+    <script>
+        Polymer({
+
+            drawChart: function () {
+                var dataset = [5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+                11, 12, 15, 20, 18, 17,43,45,2,34,45,2,7,43,3];
+
+                var w = 500;
+                var h = 100;
+                var barPadding = 2;
+
+                var svg = d3.select(this.$.svg)
+                    .attr("width", w)
+                    .attr("height", h);
+
+                //bars
+                var bars = svg.selectAll("rect")
+                    .data(dataset)
+                    .enter()
+                    .append("rect")
+                    .attr("x", function (d, i) { return i * (w / dataset.length); })
+                    .attr("y", h)
+                    .attr("width", w / dataset.length - barPadding)
+                    .attr("height", function (d) { return d*4; })
+                    .attr("fill", function (d) { return "rgb(0, 0, " + (d * 10) + ")"; });
+                bars
+                    .transition()
+                    .attr("y", function (d) { return h - d * 4; })
+                    .duration(1000)
+                    .delay(100);
+                //lables
+                lables = svg.selectAll("text")
+                    .data(dataset)
+                    .enter()
+                    .append("text")
+                    .text(function (d) { return d; })
+                    .attr("x", function (d, i) {
+                        return i * (w / dataset.length) + (w / dataset.length - barPadding) / 2;
+                    })
+                    .attr("y", function (d) {
+                        return h - (d * 4) + 14;
+                    })
+                    .attr("text-anchor", "middle")
+                    .style("opacity", 0);
+                lables
+                    .transition()
+                    .style("opacity", 100)
+                    .delay(1000);
+            },
+
+            domReady: function () {
+
+                this.drawChart();
+            },
+            urlChanged: function (oldValue, newValue) {
+                if (newValue && oldValue) {
+                    this.getData();
+                }
+            }
+        });
+    </script>
+</polymer-element>
