@@ -48,6 +48,9 @@
     <Reference Include="OSIsoft.Qi.Http.Client">
       <HintPath>..\packages\OSIsoft.Qi.Http.Client.1.0.0.444\lib\net45\OSIsoft.Qi.Http.Client.dll</HintPath>
     </Reference>
+    <Reference Include="QiQuery">
+      <HintPath>..\..\HackfestDataSimulator\QiQuery\bin\Debug\QiQuery.dll</HintPath>
+    </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -249,6 +252,7 @@
     <Content Include="post-service\post-service.html" />
     <Content Include="starter\ajaxdemo.html" />
     <Content Include="starter\index.html" />
+    <Content Include="starter\oee-summary.html" />
     <Content Include="starter\oee-gage.html" />
     <Content Include="starter\lb-bar-chart.html" />
     <Content Include="starter\Overview.html" />

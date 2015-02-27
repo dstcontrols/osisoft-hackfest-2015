@@ -2,57 +2,35 @@
 <link rel="import"
       href="../components/core-ajax/core-ajax.html">
 
-
-
 <script src="http://d3js.org/d3.v3.min.js"></script>
 
 <script src="../components/c3/c3.min.js"></script>
 <!--params='{" start":"2015-02-20","stop":"2015-02-27"}'-->
-<polymer-element name="oee-gage" attributes="url">
+<polymer-element name="oee-gage" attributes="height width gvalue">
     <template>
         <link href="../components/c3/c3.min.css" rel="stylesheet" type="text/css" />
-        <core-ajax auto
-                   url="http://localhost:49259/api/oee"
-                   handleas="json"                   
-                   on-core-response="{{handleResponse}}"
-                   ></core-ajax>
+
         <style>
-            :host {
-                display: block;
-                height: 160px;
+            div{
+                display:inline-block;
+                width:200px;
+                margin:1em;
+                background: #eaeaea;
             }
-
-            text {
-                fill: white;
-                font-family: sans-serif;
-                font-size: 11px;
-            }
-
-            svg {
-                margin: 10px 0 0 10px;
-            }
-
-            .arc path {
-                stroke: #fff;
-            }
-        </style>
-        <svg id="svg"></svg>
-        <div id="chart"></div>
+       </style>
+                <div id="OEEgage"></div>
     </template>
     <script>
         Polymer({
             data: [],
-            handleResponse: function(e){
-                this.data =['OEE', 73.6];//e.detail.response;
-                this.drawChart();
-            },
+
             drawChart: function () {
-                
-                var chart = c3.generate({
-                    bindto: this.$.chart,
+
+                var OEEgage = c3.generate({
+                    bindto: this.$.OEEgage,
                     data: {
                         columns: [
-                            this.data
+                            ["OEE",this.gvalue]
                         ],
                         type: 'gauge',
                         onclick: function (d, i) { console.log("onclick", d, i); },
@@ -60,16 +38,17 @@
                         onmouseout: function (d, i) { console.log("onmouseout", d, i); }
                     },
                     gauge: {
-                        //        label: {
-                        //            format: function(value, ratio) {
-                        //                return value;
-                        //            },
-                        //            show: false // to turn off the min/max labels.
-                        //        },
-                        //    min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
-                        //    max: 100, // 100 is default
-                        //    units: ' %',
-                        //    width: 39 // for adjusting arc thickness
+                        label: {
+
+                            //format: function(value, ratio) {
+                            //    return value;
+                            //},
+                            //show: true // to turn off the min/max labels.
+                        },
+                        min: 0, // 0 is default, //can handle negative min e.g. vacuum / voltage / current flow / rate of change
+                        max: 100, // 100 is default
+                        units: ' %',
+                        width: this.width // for adjusting arc thickness
                     },
                     color: {
                         pattern: ['#FF0000', '#F97600', '#F6C600', '#60B044'], // the three color levels for the percentage values.
@@ -80,18 +59,18 @@
                         }
                     },
                     size: {
-                        height: 180
+                        height: this.height
                     }
                 });
             },
 
             domReady: function () {
 
-                this.drawChart();
+                //this.drawChart();
             },
-            urlChanged: function (oldValue, newValue) {
+            gvalueChanged: function (oldValue, newValue) {
                 if (newValue && oldValue) {
-                    this.getData();
+                    this.drawChart();
                 }
             }
         });

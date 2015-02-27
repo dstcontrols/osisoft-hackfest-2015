@@ -1,0 +1,68 @@
+﻿<link rel="import" href="../components/polymer/polymer.html">
+<link rel="import"
+      href="../components/core-ajax/core-ajax.html">
+
+<link rel="import"
+      href="../components/core-toolbar/core-toolbar.html">
+
+<link rel="import" href="oee-gage.html">
+
+
+<!--params='{" start":"2015-02-20","stop":"2015-02-27"}'-->
+<polymer-element name="oee-summary" attributes="url">
+    <template>
+        <core-ajax auto
+                   url="http://localhost:49259/api/oee"
+                   handleas="json"
+                   on-core-response="{{handleResponse}}"></core-ajax>
+        <style>
+            oee-gage {
+                margin: 10px 10px 10px 10px;
+            }
+            .example{
+                background: #b6ff00;
+                padding: 10px;
+            }
+            .example > div {
+                background: #EEE;
+                margin: 10px;
+            }
+        </style>
+
+        <div class="example" layout horizontal>
+            <div>One</div>
+            <div>Two</div>
+            <div>Three</div>
+        </div>
+        <oee-gage id="OEEgage" height="180" width="60" gvalue="22.3"></oee-gage>
+            <oee-gage id="Agage" height="130" width="30" gvalue="60.3"></oee-gage>
+            <oee-gage id="Pgage" height="130" width="30" gvalue="60.3"></oee-gage>
+            <oee-gage id="Qgage" height="130" width="30" gvalue="60.3"></oee-gage>
+
+
+
+    </template>
+    <script>
+        Polymer({
+            data: [],
+            handleResponse: function (e) {
+                var o = e.detail.response;
+                var g = this.$.OEEgage;
+                g.gvalue = o.OEE;
+                this.$.Agage.gvalue = o.Availability;
+                this.$.Pgage.gvalue = o.Throughput;
+                this.$.Qgage.gvalue = o.Quality;
+
+            },
+
+            domReady: function () {
+
+            },
+            urlChanged: function (oldValue, newValue) {
+                if (newValue && oldValue) {
+                    this.getData();
+                }
+            }
+        });
+    </script>
+</polymer-element>
