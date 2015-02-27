@@ -1,7 +1,14 @@
 ﻿<link rel="import" href="../components/polymer/polymer.html">
-
+<link rel="import"
+      href="../components/core-ajax/core-ajax.html">
+<!--params='{" start":"2015-02-20","stop":"2015-02-27"}'-->
 <polymer-element name="lb-bar-chart" attributes="url">
     <template>
+        <core-ajax auto
+                   url="http://localhost:49259/api/oee"
+                   handleas="json"                   
+                   on-core-response="{{handleResponse}}"
+                   ></core-ajax>
         <style>
             :host {
                 display: block;
@@ -26,10 +33,15 @@
     </template>
     <script>
         Polymer({
-
+            data: [],
+            handleResponse: function(e){
+                this.data = e.detail.response;
+                this.drawChart();
+            },
             drawChart: function () {
-                var dataset = [5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
-                11, 12, 15, 20, 18, 17,43,45,2,34,45,2,7,43,3];
+                //var dataset = [5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
+                //11, 12, 15, 20, 18, 17,43,45,2,34,45,2,7,43,3];
+                dataset = this.data;
 
                 var w = 500;
                 var h = 100;

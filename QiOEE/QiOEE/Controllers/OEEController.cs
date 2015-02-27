@@ -11,9 +11,11 @@ namespace QiOEE.Controllers
     public class OEEController : ApiController
     {
         // GET: api/OEE
-        public string Get()
+        public IEnumerable<int> Get()
         {
-            return QiService.DataTest();
+            int[] data = { 1, 2, 3, 4,6,7,8,9,10,11,6,3 };
+
+            return data;// QiService.DataTest();
         }
 
         // GET: api/OEE/5
