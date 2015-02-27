@@ -19,7 +19,7 @@ namespace QueryConsole
         {
             var client = new QiQuery.Client(Endpoint,Tenant,TagPrefix);
 
-            var oee = client.GetOEE(DateTime.Now.AddHours(-5), DateTime.Now.AddHours(-1));
+            var oee = client.GetOEE(DateTime.Now.AddHours(-5), DateTime.Now.AddHours(-1), 0);
         }
     }
 }

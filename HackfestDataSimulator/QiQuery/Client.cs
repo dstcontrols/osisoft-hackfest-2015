@@ -31,7 +31,7 @@ namespace QiQuery
             GetStreams();
         }
 
-        public OEEModel GetOEE(DateTime startTime, DateTime endTime)
+        public OEEModel GetOEE(DateTime startTime, DateTime endTime, int shift)
         {
             var model = new OEEModel(startTime, endTime);
 
@@ -190,10 +190,8 @@ namespace QiQuery
         public string mStateStreamId { get; set; }
 
         public string sAvailStreamId { get; set; }
-        #endregion
-
-
 
         public IQiServer _server { get; set; }
+        #endregion
     }
 }

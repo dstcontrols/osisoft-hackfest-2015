@@ -15,10 +15,6 @@ namespace QiQuery
             Shift = string.Empty;
         }
 
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
-        public string Shift { get; set; }
-
         internal void Calculate()
         {
             Downtime = ScheduledSeconds - RunningTime;
@@ -35,6 +31,12 @@ namespace QiQuery
             //OEE
             OEE = Availability * Throughput * Quality;
         }
+
+        public DateTime StartTime { get; set; }
+
+        public DateTime EndTime { get; set; }
+
+        public string Shift { get; set; }
 
         public int TotalParts { get; set; }
 
