@@ -120,6 +120,7 @@ namespace HackfestDataSimulator.Simulator
 				TimeStampId = timeIndex,
 				IsGood = true
 			};
+			goodPartValues.Add(gPartValue);
 
 		}
 

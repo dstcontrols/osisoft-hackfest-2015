@@ -46,7 +46,7 @@ namespace HackfestDataSimulator.Simulator
         {
             var num = _random.Next(100);
 
-            if (num <= 80)
+            if (num <= 88)
             {
                 var value = new QiPointMachineState()
                 {
@@ -59,7 +59,7 @@ namespace HackfestDataSimulator.Simulator
                 values.Add(value);
                 return value;
             }
-            else if (num <= 85)
+            else if (num <= 92)
             {
                 var value = new QiPointMachineState()
                 {
@@ -72,7 +72,7 @@ namespace HackfestDataSimulator.Simulator
                 values.Add(value);
                 return value;
             }
-            else if (num <= 95)
+            else if (num <= 98)
             {
                 var value = new QiPointMachineState()
                 {

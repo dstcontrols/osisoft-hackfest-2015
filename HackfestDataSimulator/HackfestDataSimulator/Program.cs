@@ -25,7 +25,7 @@ namespace HackfestDataSimulator
             var SimulationEnd = new DateTime(2015, 3, 1);
 
             //create simulators
-            var simulator = new Simulator.Simulator("P6-5");
+            var simulator = new Simulator.Simulator("P6-8");
 
             //simulate times
             var timeIndex = SimulationStart;

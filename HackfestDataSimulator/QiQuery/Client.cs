@@ -144,7 +144,7 @@ namespace QiQuery
         {
             var server = GetQiServer();
 
-            var totalPartValues = server.GetWindowQuery<QiPartCount>(tPartStreamId, model.StartTime.ToString("o"), model.EndTime.ToString("o"), QiBoundaryType.Outside);
+            var totalPartValues = server.GetWindowQuery<QiPartCount>(tPartStreamId, model.StartTime.ToString("o"), model.EndTime.ToString("o"), QiBoundaryType.Outside).ToList();
 
             var sTotalParts = totalPartValues.Where(x => x.TimeStampId <= model.StartTime.ToUniversalTime()).OrderByDescending(y => y.TimeStampId).First().Count;
             var eTotalParts = totalPartValues.Where(x => x.TimeStampId >= model.EndTime.ToUniversalTime()).OrderBy(y => y.TimeStampId).First().Count;
