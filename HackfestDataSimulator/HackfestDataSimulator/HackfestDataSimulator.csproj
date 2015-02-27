@@ -38,14 +38,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OSIsoft.Qi.Core">
-      <HintPath>..\packages\OSIsoft.Qi.Core.1.0.0.444\lib\portable-net45+win\OSIsoft.Qi.Core.dll</HintPath>
+    <Reference Include="OSIsoft.Qi.Core, Version=1.0.0.445, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OSIsoft.Qi.Core.1.0.0.445\lib\portable-net45+win\OSIsoft.Qi.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OSIsoft.Qi.Http.Channel">
-      <HintPath>..\packages\OSIsoft.Qi.Http.Channel.1.0.0.444\lib\net45\OSIsoft.Qi.Http.Channel.dll</HintPath>
+    <Reference Include="OSIsoft.Qi.Http.Channel, Version=1.0.0.445, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OSIsoft.Qi.Http.Channel.1.0.0.445\lib\net45\OSIsoft.Qi.Http.Channel.dll</HintPath>
     </Reference>
-    <Reference Include="OSIsoft.Qi.Http.Client">
-      <HintPath>..\packages\OSIsoft.Qi.Http.Client.1.0.0.444\lib\net45\OSIsoft.Qi.Http.Client.dll</HintPath>
+    <Reference Include="OSIsoft.Qi.Http.Client, Version=1.0.0.445, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\OSIsoft.Qi.Http.Client.1.0.0.445\lib\net45\OSIsoft.Qi.Http.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,11 +66,21 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QiClient\QiClient.cs" />
+    <Compile Include="SimulatorType\QiPartCount.cs" />
+    <Compile Include="SimulatorType\QiPointCycleTime.cs" />
+    <Compile Include="SimulatorType\QiPointMachineState.cs" />
+    <Compile Include="SimulatorType\QiPointSched.cs" />
+    <Compile Include="Simulator\MachineState.cs" />
+    <Compile Include="Simulator\parts.cs" />
+    <Compile Include="Simulator\Schedule.cs" />
+    <Compile Include="Simulator\Simulator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

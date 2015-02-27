@@ -12,6 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{C525C2
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryConsole", "QueryConsole\QueryConsole.csproj", "{459F9FDE-44B8-49AC-A133-B1EB95286B63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QiQuery", "QiQuery\QiQuery.csproj", "{37F55913-7595-47DF-A8E4-7BC4BD62DF86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,6 +26,14 @@ Global
 		{EBEFC6CC-F09D-4B03-B1D3-27040B310BC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBEFC6CC-F09D-4B03-B1D3-27040B310BC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBEFC6CC-F09D-4B03-B1D3-27040B310BC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{459F9FDE-44B8-49AC-A133-B1EB95286B63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{459F9FDE-44B8-49AC-A133-B1EB95286B63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{459F9FDE-44B8-49AC-A133-B1EB95286B63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{459F9FDE-44B8-49AC-A133-B1EB95286B63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37F55913-7595-47DF-A8E4-7BC4BD62DF86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37F55913-7595-47DF-A8E4-7BC4BD62DF86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37F55913-7595-47DF-A8E4-7BC4BD62DF86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37F55913-7595-47DF-A8E4-7BC4BD62DF86}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
