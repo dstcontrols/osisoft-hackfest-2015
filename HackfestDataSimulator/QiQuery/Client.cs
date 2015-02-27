@@ -6,6 +6,7 @@ using OSIsoft.Qi;
 using OSIsoft.Qi.Http;
 using System.Threading.Tasks;
 using HackfestDataSimulator.SimulatorType;
+using System.Collections.Concurrent;
 
 namespace QiQuery
 {
@@ -31,125 +32,348 @@ namespace QiQuery
             GetStreams();
         }
 
-        public OEEModel GetOEE(DateTime startTime, DateTime endTime, int shift)
+        public OEEModel GetOEE(DateTime startTime, DateTime endTime, int shift, int resolution)
         {
-            var model = new OEEModel(startTime, endTime);
+            var primaryModel = new OEEModel(startTime, endTime);
+
+            var generalRunTimes = GetGeneralRunTimes(startTime, endTime, resolution);
+
+            GetScheduledAvailability(primaryModel, shift);
 
             var tasks = new List<Task>();
 
-            tasks.Add(Task.Run(() => { GetTotalParts(model); }));
-            tasks.Add(Task.Run(() => { GetGoodParts(model); }));
-            tasks.Add(Task.Run(() => { GetIdealCycleTime(model); }));
-            tasks.Add(Task.Run(() => { GetScheduledAvailability(model); }));
-            tasks.Add(Task.Run(() => { GetMachineState(model); }));
+            tasks.Add(Task.Run(() => { GetTotalParts(primaryModel); }));
+            tasks.Add(Task.Run(() => { GetGoodParts(primaryModel); }));
+            tasks.Add(Task.Run(() => { GetIdealCycleTime(primaryModel); }));
+            tasks.Add(Task.Run(() => { GetMachineState(primaryModel); }));
+
+            tasks.Add(Task.Run(() =>
+            {
+                var bag = new ConcurrentBag<OEEModel>();
+                Parallel.ForEach(generalRunTimes, runTime =>
+                    {
+                        try
+                        {
+                            var model = new OEEModel(runTime.Item1, runTime.Item2);
+                            bag.Add(model);
+
+                            GetScheduledAvailability(model, shift);
+
+                            var subTasks = new List<Task>();
+
+                            subTasks.Add(Task.Run(() => { GetTotalParts(model); }));
+                            subTasks.Add(Task.Run(() => { GetGoodParts(model); }));
+                            subTasks.Add(Task.Run(() => { GetIdealCycleTime(model); }));
+                            subTasks.Add(Task.Run(() => { GetMachineState(model); }));
+
+                            Task.WaitAll(subTasks.ToArray());
+                            model.Calculate();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw;
+                        }
+                    });
+
+                primaryModel.SubOEEs = bag.ToList();
+            }));
 
             Task.WaitAll(tasks.ToArray());
 
-            model.Calculate();
-            return model;
+            primaryModel.Calculate();
+            return primaryModel;
+        }
+
+        private IList<Tuple<DateTime, DateTime>> GetGeneralRunTimes(DateTime startTime, DateTime endTime, int resolution)
+        {
+            var spanHours = (endTime - startTime).TotalHours;
+            var fullChunks = Math.Floor(spanHours / resolution);
+
+            var results = new List<Tuple<DateTime, DateTime>>();
+
+            for (int i = 0; i < fullChunks; i++)
+            {
+                results.Add(new Tuple<DateTime, DateTime>(startTime.AddHours(i * resolution), startTime.AddHours((i + 1) * resolution)));
+            }
+
+            if (results.Count == 0)
+            {
+                results.Add(new Tuple<DateTime, DateTime>(startTime, endTime));
+            }
+            else
+            {
+                results.Add(new Tuple<DateTime, DateTime>(results.Last().Item2, endTime));
+            }
+
+            return results;
+        }
+
+        private IList<Tuple<DateTime,DateTime>> GetRunTimes(DateTime startTime, DateTime endTime, int shift, int resolution)
+        {
+            var ranges = new List<Tuple<DateTime,DateTime>>();
+
+            var server = GetQiServer();
+
+            var schedAvail = server.GetWindowValues<QiPointSched>(sAvailStreamId, startTime.AddHours(-8).ToString("o"), endTime.AddHours(-8).ToString("o"), QiBoundaryType.Outside).ToList();
+            schedAvail.First().TimeStampId = startTime;
+            schedAvail.Last().TimeStampId = endTime;
+
+
+            for (int i = 0; i < schedAvail.Count -1; i++)
+            {
+                var currentSch = schedAvail[i];
+                var nextSch = schedAvail[i + 1];
+
+                if (shift != 0)
+                {
+                    if (currentSch.Shift == shift)
+                    {
+                        ranges.Add(new Tuple<DateTime, DateTime>(currentSch.TimeStampId, nextSch.TimeStampId));
+                    }
+                }
+                else
+                {
+                    if (currentSch.Shift != 0)
+                    {
+                        ranges.Add(new Tuple<DateTime, DateTime>(currentSch.TimeStampId, nextSch.TimeStampId));
+                    }
+                }
+                
+            }
+
+            return ranges.Where(z => (z.Item2 - z.Item1).TotalSeconds != 0).SelectMany(j => SplitRangeIntoResolution(j, resolution)).ToList();
+        }
+
+        private IList<Tuple<DateTime,DateTime>> SplitRangeIntoResolution(Tuple<DateTime,DateTime> range, int resolution)
+        {
+            var result = new List<Tuple<DateTime, DateTime>>();
+
+            var span = (range.Item2 - range.Item1).TotalHours;
+
+            if ( span <= resolution)
+            {
+                result.Add(range);
+            }
+            else
+            {
+                var x = 0;
+                for (int i = 0; i < Math.Floor(span) - 1; i++)
+                {
+                    var startTime = range.Item1.AddHours(i);
+                    var endTime = range.Item1.AddHours(i + 1);
+                    result.Add(new Tuple<DateTime, DateTime>(startTime, endTime));
+                    x = i;
+                }
+                
+                result.Add(new Tuple<DateTime,DateTime>(range.Item1.AddHours(x),range.Item2));
+            }
+
+            return result;
         }
 
         private void GetMachineState(OEEModel model)
         {
-            var server = GetQiServer();
-
-            var machineStates = server.GetWindowValues<QiPointMachineState>(mStateStreamId,model.StartTime.ToString("o"), model.EndTime.ToString("o"), QiBoundaryType.Outside).OrderBy(x => x.TimeStampId).ToList();
-
-            machineStates[0].TimeStampId = model.StartTime.ToUniversalTime();
-            machineStates[machineStates.Count - 1].TimeStampId = model.EndTime.ToUniversalTime();
-
-            var totalRunningTime = 0.0;
-
-            for (int i = 0; i < machineStates.Count -1; i++)
+            try
             {
-                var currentMS = machineStates[i];
-                var nextMS = machineStates[i + 1];
+                var server = GetQiServer();
 
-                if (currentMS.Running)
+                var machineStates = server.GetWindowValues<QiPointMachineState>(mStateStreamId, model.StartTime.AddHours(-8).ToString("o"), model.EndTime.AddHours(-8).ToString("o"), QiBoundaryType.Outside).OrderBy(x => x.TimeStampId).ToList();
+
+                machineStates[0].TimeStampId = model.StartTime;
+                machineStates[machineStates.Count - 1].TimeStampId = model.EndTime;
+
+                var totalRunningTime = 0.0;
+
+                for (int i = 0; i < machineStates.Count - 1; i++)
                 {
-                    totalRunningTime += (nextMS.TimeStampId - currentMS.TimeStampId).TotalSeconds;
+                    var currentMS = machineStates[i];
+                    var nextMS = machineStates[i + 1];
+
+                    var currentMSRange = model.Spans.Where(z => z.Item1 <= currentMS.TimeStampId && z.Item2 > currentMS.TimeStampId).Select(z => z).FirstOrDefault();
+                    var nextMSRange = model.Spans.Where(z => z.Item1 <= nextMS.TimeStampId && z.Item2 >= nextMS.TimeStampId).Select(z => z).FirstOrDefault();
+
+                    if (currentMSRange == null && nextMSRange != null)
+                    {
+                        currentMS.TimeStampId = nextMSRange.Item1;
+                    }
+                    else if (currentMSRange != null && nextMSRange == null)
+                    {
+                        nextMS.TimeStampId = currentMSRange.Item2;
+                    }
+                    else if (currentMSRange == null && nextMSRange == null)
+                    {
+                        continue;
+                    }
+
+                    if (currentMS.Running)
+                    {
+                        totalRunningTime += (nextMS.TimeStampId - currentMS.TimeStampId).TotalSeconds;
+                    }
                 }
+
+                model.RunningTime = totalRunningTime;
             }
-
-            model.RunningTime = totalRunningTime;
-
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        private void GetScheduledAvailability(OEEModel model)
+        private void GetScheduledAvailability(OEEModel model, int shift)
         {
-            var server = GetQiServer();
-
-            var schedAvail = server.GetWindowQuery<QiPointSched>(sAvailStreamId, model.StartTime.ToString("o"), model.EndTime.ToString("o"), QiBoundaryType.Outside).OrderBy(x => x.TimeStampId).ToList();
-
-            schedAvail[0].TimeStampId = model.StartTime.ToUniversalTime();
-            schedAvail[schedAvail.Count - 1].TimeStampId = model.EndTime.ToUniversalTime();
-
-            var scheduledSeconds = 0.0;
-
-            for (int i = 0; i < schedAvail.Count - 1; i++)
+            try
             {
-                var currentSched = schedAvail[i];
-                var nextSched = schedAvail[i + 1];
+                var server = GetQiServer();
 
-                if (currentSched.Shift != 0)
+                var schedAvail = server.GetWindowValues<QiPointSched>(sAvailStreamId, model.StartTime.AddHours(-8).ToString("o"), model.EndTime.AddHours(-8).ToString("o"), QiBoundaryType.Outside).OrderBy(x => x.TimeStampId).ToList();
+
+                schedAvail[0].TimeStampId = model.StartTime;
+                schedAvail[schedAvail.Count - 1].TimeStampId = model.EndTime;
+
+                var scheduledSeconds = 0.0;
+
+                model.Spans = new List<Tuple<DateTime, DateTime>>();
+
+                for (int i = 0; i < schedAvail.Count - 1; i++)
                 {
-                    var span = nextSched.TimeStampId - currentSched.TimeStampId;
-                    scheduledSeconds += span.TotalSeconds;
-                }
-            }
+                    var currentSched = schedAvail[i];
+                    var nextSched = schedAvail[i + 1];
 
-            model.ScheduledSeconds = scheduledSeconds;
+                    if (currentSched.Shift != 0)
+                    {
+                        if (shift == 0 || currentSched.Shift == shift || currentSched.Shift == shift)
+                        {
+                            model.Spans.Add(new Tuple<DateTime, DateTime>(currentSched.TimeStampId, nextSched.TimeStampId));
+                            var span = nextSched.TimeStampId - currentSched.TimeStampId;
+                            scheduledSeconds += span.TotalSeconds;
+                        }
+                    }
+                }
+
+                model.Spans = model.Spans.Where(x => (x.Item2 - x.Item1).TotalSeconds >= 0).Select(y => y).ToList();
+
+                model.ScheduledSeconds = scheduledSeconds;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         private void GetIdealCycleTime(OEEModel model)
         {
-            var server = GetQiServer();
-
-            var cycleTimes = server.GetWindowQuery<QiPointCycleTime>(cTimeStreamId, model.StartTime.ToString("o"), model.EndTime.ToString("o"), QiBoundaryType.Outside).OrderBy(x => x.TimeStampId).ToList();
-
-            var totalIdealParts = 0.0;
-            var totalSeconds = 0.0;
-
-            for (int i = 0; i < cycleTimes.Count() - 1; i++)
+            try
             {
-                var currentCT = cycleTimes[i];
-                var nextCT = cycleTimes[i + 1];
+                var server = GetQiServer();
 
-                var span = nextCT.TimeStampId - currentCT.TimeStampId;
+                var cycleTimes = server.GetWindowValues<QiPointCycleTime>(cTimeStreamId, model.StartTime.AddHours(-8).ToString("o"), model.EndTime.AddHours(-8).ToString("o"), QiBoundaryType.Outside).OrderBy(x => x.TimeStampId).ToList();
 
-                if (currentCT.CycleTime != 0.0)
+                var totalIdealParts = 0.0;
+                var totalSeconds = 0.0;
+
+                for (int i = 0; i < cycleTimes.Count() - 1; i++)
                 {
-                    totalSeconds = totalSeconds + span.TotalSeconds;
-                    totalIdealParts = totalIdealParts + (span.TotalSeconds * currentCT.CycleTime);
-                }
-            }
+                    var currentCT = cycleTimes[i];
+                    var nextCT = cycleTimes[i + 1];
 
-            model.IdealCycleTime = totalIdealParts / totalSeconds;
-            model.IdealParts = totalIdealParts;
+                    var currentCTRange = model.Spans.Where(z => z.Item1 <= currentCT.TimeStampId && z.Item2 > currentCT.TimeStampId).Select(z => z).FirstOrDefault();
+                    var nextCTRange = model.Spans.Where(z => z.Item1 <= nextCT.TimeStampId && z.Item2 >= nextCT.TimeStampId).Select(z => z).FirstOrDefault();
+
+                    if (currentCTRange == null && nextCTRange != null)
+                    {
+                        currentCT.TimeStampId = nextCTRange.Item1;
+                    }
+                    else if (currentCTRange != null && nextCTRange == null)
+                    {
+                        nextCT.TimeStampId = currentCTRange.Item2;
+                    }
+                    else if (currentCTRange == null && nextCTRange == null)
+                    {
+                        continue;
+                    }
+
+                    var span = nextCT.TimeStampId - currentCT.TimeStampId;
+
+                    if (currentCT.CycleTime != 0.0)
+                    {
+                        totalSeconds = totalSeconds + span.TotalSeconds;
+                        totalIdealParts = totalIdealParts + (span.TotalSeconds * currentCT.CycleTime);
+                    }
+                }
+
+                model.IdealCycleTime = totalIdealParts / totalSeconds;
+                model.IdealParts = totalIdealParts;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         private void GetGoodParts(OEEModel model)
         {
-            var server = GetQiServer();
+            try
+            {
+                var server = GetQiServer();
 
-            var GoodPartValues = server.GetWindowQuery<QiPartCount>(gPartStreamId, model.StartTime.ToString("o"), model.EndTime.ToString("o"), QiBoundaryType.Outside);
+                var GoodPartValues = server.GetWindowValues<QiPartCount>(gPartStreamId, model.StartTime.AddHours(-8).ToString("o"), model.EndTime.AddHours(-8).ToString("o"), QiBoundaryType.Outside);
 
-            var sGoodParts = GoodPartValues.Where(x => x.TimeStampId <= model.StartTime.ToUniversalTime()).OrderByDescending(y => y.TimeStampId).First().Count;
-            var eGoodParts = GoodPartValues.Where(x => x.TimeStampId >= model.EndTime.ToUniversalTime()).OrderBy(y => y.TimeStampId).First().Count;
+                var goodParts = 0;
 
-            model.GoodParts = eGoodParts - sGoodParts;
+                foreach (var range in model.Spans)
+                {
+                    var orderedParts = GoodPartValues.Where(x => x.TimeStampId >= range.Item1 && x.TimeStampId <= range.Item2).OrderBy(j => j.TimeStampId).Select(y => y);
+
+                    if (orderedParts.Count() == 0)
+                    {
+                        continue;
+                    }
+
+                    var firstTCount = orderedParts.First().Count;
+                    var lastTCount = orderedParts.Last().Count;
+
+                    goodParts += lastTCount - firstTCount;
+                }
+
+                model.GoodParts = goodParts;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         private void GetTotalParts(OEEModel model)
         {
-            var server = GetQiServer();
+            try
+            {
+                var server = GetQiServer();
 
-            var totalPartValues = server.GetWindowQuery<QiPartCount>(tPartStreamId, model.StartTime.ToString("o"), model.EndTime.ToString("o"), QiBoundaryType.Outside).ToList();
+                var totalPartValues = server.GetWindowValues<QiPartCount>(tPartStreamId, model.StartTime.AddHours(-8).ToString("o"), model.EndTime.AddHours(-8).ToString("o"), QiBoundaryType.Outside).ToList();
 
-            var sTotalParts = totalPartValues.Where(x => x.TimeStampId <= model.StartTime.ToUniversalTime()).OrderByDescending(y => y.TimeStampId).First().Count;
-            var eTotalParts = totalPartValues.Where(x => x.TimeStampId >= model.EndTime.ToUniversalTime()).OrderBy(y => y.TimeStampId).First().Count;
+                var totalParts = 0;
 
-            model.TotalParts = eTotalParts - sTotalParts;
+                foreach (var range in model.Spans)
+                {
+                    var orderedParts = totalPartValues.Where(x => x.TimeStampId >= range.Item1 && x.TimeStampId <= range.Item2).OrderBy(j => j.TimeStampId).Select(y => y);
+
+                    if (orderedParts.Count() == 0)
+                    {
+                        continue;
+                    }
+
+                    var firstTCount = orderedParts.First().Count;
+                    var lastTCount = orderedParts.Last().Count;
+
+                    totalParts += lastTCount - firstTCount;
+                }
+
+                model.TotalParts = totalParts;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         public IQiServer GetQiServer()
@@ -193,5 +417,29 @@ namespace QiQuery
 
         public IQiServer _server { get; set; }
         #endregion
+
+        public OEEModel GetOEEWeek(int shift)
+        {
+            var startOfWeek = DateTime.Now.Date.AddDays(-6);
+            var endOfWeek = DateTime.Now;
+
+            return GetOEE(startOfWeek, endOfWeek, shift, 24);
+        }
+
+        public OEEModel GetOEEToday(int shift)
+        {
+            var startOfDay = DateTime.Now.Date;
+            var endOfDay = DateTime.Now;
+
+            return GetOEE(startOfDay, endOfDay, shift, 1);
+        }
+
+        public OEEModel GetOEEYesterday(int shift)
+        {
+            var startOfDay = DateTime.Now.Date.AddDays(-1);
+            var endOfDay = DateTime.Now.Date;
+
+            return GetOEE(startOfDay, endOfDay, shift, 1);
+        }
     }
 }
