@@ -19,7 +19,22 @@ namespace QueryConsole
         {
             var client = new QiQuery.Client(Endpoint,Tenant,TagPrefix);
 
-            var oee = client.GetOEE(DateTime.Now.AddHours(-5), DateTime.Now.AddHours(-1), 0);
+            //var oee = client.GetOEE(DateTime.Now.Date, DateTime.Now.AddDays(1).Date, 0, 1);
+            //week queryies
+            var oeeWeek = client.GetOEEWeek(0);
+            var oeeWeekShift1 = client.GetOEEWeek(1);
+            var oeeWeekShift2 = client.GetOEEWeek(2);
+
+            //today query
+            var OEEToday = client.GetOEEToday(0);
+            var OEETodayShift1 = client.GetOEEToday(1);
+            var OEETodayShift2 = client.GetOEEToday(2);
+
+            //var oeeToday = client.GetOEEToday();
+            var OEEYesterday = client.GetOEEYesterday(0);
+            var OEEYesterdayShift1 = client.GetOEEYesterday(1);
+            var OEEYesterdayShift2 = client.GetOEEYesterday(2);
+        
         }
     }
 }

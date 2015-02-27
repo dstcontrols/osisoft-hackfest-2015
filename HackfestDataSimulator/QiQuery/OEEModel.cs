@@ -32,6 +32,11 @@ namespace QiQuery
             OEE = Availability * Throughput * Quality;
         }
 
+        public override string ToString()
+        {
+            return string.Format("OEE: {0}%", OEE * 100);
+        }
+
         public DateTime StartTime { get; set; }
 
         public DateTime EndTime { get; set; }
@@ -59,5 +64,9 @@ namespace QiQuery
         public double Quality { get; set; }
 
         public double OEE { get; set; }
+
+        public IList<OEEModel> SubOEEs { get; set; }
+
+        public IList<Tuple<DateTime, DateTime>> Spans { get; set; }
     }
 }
