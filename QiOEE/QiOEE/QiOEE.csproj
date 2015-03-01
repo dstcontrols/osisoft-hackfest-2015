@@ -262,6 +262,7 @@
     <Content Include="post-service\post-service.html" />
     <Content Include="starter\ajaxdemo.html" />
     <Content Include="starter\index.html" />
+    <Content Include="starter\oee-bar.html" />
     <Content Include="starter\oee-summary.html" />
     <Content Include="starter\oee-gage.html" />
     <Content Include="starter\lb-bar-chart.html" />

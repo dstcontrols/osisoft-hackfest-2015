@@ -6,6 +6,8 @@
       href="../components/core-toolbar/core-toolbar.html">
 
 <link rel="import" href="oee-gage.html">
+<link rel="import" href="oee-bar.html">
+
 
 
 <!--params='{" start":"2015-02-20","stop":"2015-02-27"}'-->
@@ -17,17 +19,14 @@
                    on-core-response="{{handleResponse}}"></core-ajax>
         <style>
             oee-gage {
-                height:500px;
+                height: 500px;
             }
-
-
         </style>
         <oee-gage id="OEEgage" height1="190" width1="60" gvalue="22.3"></oee-gage>
         <oee-gage id="Agage" height1="130" width1="30" gvalue="60.3"></oee-gage>
         <oee-gage id="Pgage" height1="130" width1="30" gvalue="60.3"></oee-gage>
         <oee-gage id="Qgage" height1="130" width1="30" gvalue="60.3"></oee-gage>
-
-
+        <oee-bar id="PBar" height1="130" width1="30" gvalue="60.3"></oee-bar>
 
     </template>
     <script>
@@ -35,14 +34,33 @@
             data: [],
             handleResponse: function (e) {
                 var o = e.detail.response;
-                this.$.OEEgage.gvalue = o.OEE;
-                this.$.Agage.gvalue = o.Availability;
-                this.$.Pgage.gvalue = o.Throughput;
-                this.$.Qgage.gvalue = o.Quality;
+                //this.$.OEEgage.gvalue = 55.5;// o.OEE;
+                //this.$.Agage.gvalue = 70.5;//o.Availability;
+                //this.$.Pgage.gvalue = 79.4;//o.Throughput;
+                //this.$.Qgage.gvalue = 80.4;//o.Quality;
+                this.$.OEEgage.gvalue = o.OEE * 100;
+                this.$.Agage.gvalue = o.Availability * 100;
+                this.$.Pgage.gvalue = o.Throughput * 100;
+                this.$.Qgage.gvalue = o.Quality * 100;
                 this.$.OEEgage.label1 = "Overall OEE";
                 this.$.Agage.label1 = "Availability";
                 this.$.Pgage.label1 = "Performance";
                 this.$.Qgage.label1 = "Quality";
+                this.$.PBar.label1 = "Performance";
+                var ideal = ['Ideal'];
+                var total = ['Total'];
+                var good = ['Good'];
+
+                for (var i = 0; i < o.SubOEEs.length; i++) {
+                    ideal.push(o.SubOEEs[i].IdealParts);
+                    total.push(o.SubOEEs[i].TotalParts);
+                    good.push(o.SubOEEs[i].GoodParts);
+                };
+                this.$.PBar.gvalue = [ideal, total, good];
+                //this.$.PBar.gvalue = [
+                //            ['data1', 30, 200, 100, 400, 150, 250],
+                //            ['data2', 130, 100, 140, 200, 150, 50]
+                //];
 
             },
 

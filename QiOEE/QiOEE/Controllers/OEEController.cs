@@ -12,7 +12,7 @@ namespace QiOEE.Controllers
     public class OEEController : ApiController
     {
         private uint _tenant = 10000;
-        private string _endpoint = "http://historiandev.cloudapp.net:3380";
+        private string _endpoint = "http://historiantest.cloudapp.net:3380";
         private string _tagPrefix = "P6-8";
         public QiQuery.Client _qiData = null;
 

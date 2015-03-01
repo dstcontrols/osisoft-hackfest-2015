@@ -13,7 +13,7 @@ namespace HackfestDataSimulator
     {
         #region Constants
         public static uint Tenant = 10000;
-        public static string Endpoint = "http://historiandev.cloudapp.net:3380";
+        public static string Endpoint = "http://historiantest.cloudapp.net:3380";
 
         #endregion
 

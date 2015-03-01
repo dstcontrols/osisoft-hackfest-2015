@@ -1,0 +1,68 @@
+﻿<link rel="import" href="../components/polymer/polymer.html">
+<link rel="import"
+      href="../components/core-ajax/core-ajax.html">
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script src="../components/c3/c3.min.js"></script>
+<polymer-element name="oee-bar" attributes="height1 width1 gvalue label1">
+    <template>
+        <link href="../components/c3/c3.min.css" rel="stylesheet" type="text/css" />
+
+        <style>
+            .test{
+                display:inline-block;
+                width:1200px; 
+                margin:10px;
+                background: #eaeaea;
+            }
+            text{
+                font-family:Arial;
+                font-size:medium;
+            }
+            .bar{
+                height:400px;
+            }
+            slabel{
+                margin:3px;
+            }
+       </style>
+        <div class="test">
+            <div class="bar" id="OEEbar"></div>
+            <div id="slabel">{{label1}}</div>
+        </div>
+
+    </template>
+    <script>
+        Polymer({
+            data: [],
+
+            drawChart: function () {
+                var OEEgage = c3.generate({
+                    bindto: this.$.OEEbar,
+                    data: {
+                        columns: this.gvalue,
+                        type: 'bar'
+                    },
+                    bar: {
+                        width: {
+                            ratio: 0.5 // this makes bar width 50% of length between ticks
+                        }
+                        // or
+                        //width: 100 // this makes bar width 100px
+                    }
+                });
+            },
+
+            domReady: function () {
+
+                //this.drawChart();
+            },
+            gvalueChanged: function (oldValue, newValue) {
+                if (newValue && oldValue) {
+                    this.drawChart();
+                }
+            }
+        });
+    </script>
+</polymer-element>
