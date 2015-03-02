@@ -18,7 +18,7 @@ namespace QiOEE.Controllers
 
         public OEEController()
         {
-            _qiData = new Client(_endpoint,_tenant,_tagPrefix);
+            //_qiData = new Client(_endpoint,_tenant,_tagPrefix);
             
         }
 
@@ -26,7 +26,13 @@ namespace QiOEE.Controllers
         [Route("api/oee/today/{shift:int}")]
         public OEEModel GetToday(int shift)
         {
-            return _qiData.GetOEEToday(shift);
+            var tdata = new OEEModel(DateTime.Now,DateTime.Now){OEE=.788,Availability=.879, Throughput=.935, Quality=.805};
+            var sOEE = new List<OEEModel>();
+            sOEE.Add(new OEEModel(DateTime.Now, DateTime.Now) { IdealParts = 1000, TotalParts = 800, GoodParts = 750 });
+            sOEE.Add(new OEEModel(DateTime.Now, DateTime.Now) { IdealParts = 1000, TotalParts = 880, GoodParts = 790 });
+            sOEE.Add(new OEEModel(DateTime.Now, DateTime.Now) { IdealParts = 1000, TotalParts = 650, GoodParts = 600 });
+            tdata.SubOEEs = sOEE;
+            return tdata;// _qiData.GetOEEToday(shift);
         }
 
         [HttpGet]

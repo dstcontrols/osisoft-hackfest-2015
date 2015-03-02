@@ -366,6 +366,8 @@
     <Content Include="components\webcomponentsjs\README.md" />
     <Content Include="starter\data.csv" />
     <None Include="Properties\PublishProfiles\hackfest.pubxml" />
+    <None Include="Properties\PublishProfiles\LB-Azure.pubxml" />
+    <None Include="Properties\PublishProfiles\skyoee.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -9,12 +9,12 @@
 <link rel="import" href="oee-bar.html">
 
 
-
+<!--url="http://localhost:49259/api/oee/today/0"-->
 <!--params='{" start":"2015-02-20","stop":"2015-02-27"}'-->
 <polymer-element name="oee-summary" attributes="url">
     <template>
         <core-ajax auto
-                   url="http://localhost:49259/api/oee/today/0"
+                   url="http://skyoee.azurewebsites.net/api/oee/today/0"
                    handleas="json"
                    on-core-response="{{handleResponse}}"></core-ajax>
         <style>
